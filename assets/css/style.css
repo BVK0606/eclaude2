@@ -2,22 +2,24 @@
 
 :root {
     --primary-color: rgb(74, 107, 255);
-    --primary-hover: rgba(74, 107, 255, 0.8);
-    --primary-light: rgba(74, 107, 255, 0.1);
+    --primary-hover: rgba(74, 107, 255, 0.9);
+    --primary-light: rgba(74, 107, 255, 0.08);
     --sidebar-width: 280px;
-    --sidebar-collapsed-width: 70px;
+    --sidebar-collapsed-width: 80px;
     --header-height: 70px;
     --dark-bg: #1a1d29;
     --darker-bg: #151820;
-    --light-text: #8492a6;
+    --light-text: #94a3b8;
     --white: #ffffff;
-    --success: #28a745;
-    --danger: #dc3545;
-    --warning: #ffc107;
-    --info: #17a2b8;
-    --gradient: linear-gradient(135deg, var(--primary-color) 0%, #9f7aea 100%);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #06b6d4;
+    --gradient: linear-gradient(135deg, var(--primary-color) 0%, #8b5cf6 100%);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -27,14 +29,22 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     background-color: #f8fafc;
     color: #334155;
     line-height: 1.6;
     overflow-x: hidden;
 }
 
+/* Glassmorphism Effect for Cards */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 /* Sidebar Styles */
+/* Sidebar - ENHANCED */
 .sidebar {
     position: fixed;
     top: 0;
@@ -42,27 +52,15 @@ body {
     width: var(--sidebar-width);
     height: 100vh;
     background: var(--dark-bg);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: var(--transition);
     z-index: 1000;
     overflow-y: auto;
     overflow-x: hidden;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar.collapsed {
     width: var(--sidebar-collapsed-width);
-}
-
-.sidebar::-webkit-scrollbar {
-    width: 4px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-    background: var(--darker-bg);
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 2px;
 }
 
 .sidebar-header {
@@ -72,6 +70,9 @@ body {
     padding: 0 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: var(--darker-bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .sidebar-header .brand {
@@ -79,14 +80,14 @@ body {
     align-items: center;
     color: var(--white);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .sidebar-header .brand-icon {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     background: var(--gradient);
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -99,21 +100,22 @@ body {
     font-weight: 700;
     white-space: nowrap;
     opacity: 1;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .sidebar.collapsed .brand-text {
     opacity: 0;
     width: 0;
+    margin: 0;
 }
 
-/* Sidebar Navigation */
+/* Navigation - ENHANCED */
 .sidebar-nav {
     padding: 20px 0;
 }
 
 .nav-section {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .nav-section-title {
@@ -121,38 +123,42 @@ body {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 0 20px 15px 20px;
+    letter-spacing: 0.5px;
+    margin: 0 20px 12px 20px;
+    padding: 8px 0;
     opacity: 1;
-    transition: all 0.3s ease;
+    transition: var(--transition);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .sidebar.collapsed .nav-section-title {
     opacity: 0;
     height: 0;
     margin: 0;
+    padding: 0;
+    border: none;
 }
 
 .nav-item {
-    margin: 0 15px 5px 15px;
+    margin: 0 12px 4px 12px;
 }
 
 .nav-link {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
+    padding: 12px 16px;
     color: var(--light-text);
     text-decoration: none;
-    border-radius: 10px;
-    transition: all 0.3s ease;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
     position: relative;
     overflow: hidden;
 }
 
 .nav-link:hover {
     color: var(--white);
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateX(5px);
+    background: rgba(74, 107, 255, 0.15);
+    transform: translateX(4px);
 }
 
 .nav-link.active {
@@ -165,10 +171,12 @@ body {
     content: '';
     position: absolute;
     left: 0;
-    top: 0;
-    width: 4px;
-    height: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
     background: var(--white);
+    border-radius: 0 2px 2px 0;
 }
 
 .nav-icon {
@@ -179,46 +187,65 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: var(--transition);
+}
+
+.sidebar.collapsed .nav-icon {
+    margin-right: 0;
 }
 
 .nav-text {
     font-weight: 500;
     white-space: nowrap;
     opacity: 1;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .sidebar.collapsed .nav-text {
     opacity: 0;
     width: 0;
+    margin: 0;
 }
 
-.nav-arrow {
-    margin-left: auto;
-    transition: transform 0.3s ease;
-    opacity: 1;
+/* Desktop: allow temporary expand on hover when collapsed
+   This keeps the sidebar compact by default but lets users peek the labels.
+   Simple to explain: collapsed = small, hover = temporary open. */
+@media (min-width: 769px) {
+    /* Disable hover-to-expand for collapsed sidebar: keep it collapsed on hover */
+    .sidebar.collapsed:hover {
+        width: var(--sidebar-collapsed-width);
+        box-shadow: none;
+    }
+
+    /* Keep main-content margin aligned with collapsed sidebar on hover */
+    .sidebar.collapsed:hover ~ .main-content {
+        margin-left: var(--sidebar-collapsed-width);
+    }
+
+    /* Do not reveal text/icons spacing when hovering a collapsed sidebar */
+    .sidebar.collapsed:hover .brand-text,
+    .sidebar.collapsed:hover .nav-section-title,
+    .sidebar.collapsed:hover .nav-text {
+        opacity: 0;
+        width: 0;
+        margin: 0;
+        pointer-events: none;
+    }
+
+    .sidebar.collapsed:hover .nav-icon {
+        margin-right: 0;
+    }
 }
 
-.sidebar.collapsed .nav-arrow {
-    opacity: 0;
+/* Make collapsed icons centered and visually clear */
+.sidebar.collapsed .nav-link {
+    justify-content: center;
 }
 
-.nav-link[data-bs-toggle="collapse"][aria-expanded="true"] .nav-arrow {
-    transform: rotate(180deg);
-}
-
-/* Submenu */
-.submenu {
-    margin-top: 5px;
-}
-
-.submenu .nav-link {
-    padding-left: 50px;
-    font-size: 0.9rem;
-}
-
-.sidebar.collapsed .submenu {
-    display: none;
+.sidebar.collapsed .nav-link .nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Main Content */
@@ -226,6 +253,8 @@ body {
     margin-left: var(--sidebar-width);
     min-height: 100vh;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* leave space for the fixed header */
+    padding-top: var(--header-height);
 }
 
 .sidebar.collapsed ~ .main-content {
@@ -242,14 +271,31 @@ body {
     justify-content: space-between;
     padding: 0 30px;
     box-shadow: var(--shadow);
-    position: sticky;
+    /* make header fixed so it always sits above the sidebar on desktop and mobile */
+    position: fixed;
     top: 0;
-    z-index: 999;
+    left: 0;
+    right: 0;
+    /* make header sit above everything (sidebar, overlays) */
+    z-index: 99999;
+}
+
+/* On desktop, shift header content right so it doesn't sit under the fixed sidebar */
+@media (min-width: 769px) {
+    /* desktop header padding removed to restore original layout */
 }
 
 .header-left {
     display: flex;
     align-items: center;
+}
+
+/* make sure header-left controls (toggle + title) sit above the sidebar */
+.header-left,
+.header-left .sidebar-toggle,
+.header-left .page-title {
+    position: relative;
+    z-index: 100000;
 }
 
 .sidebar-toggle {
@@ -281,7 +327,123 @@ body {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+}
+
+/* Center area for larger viewports (title + optional search) */
+.header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Ensure header content stacks nicely on small screens */
+@media (max-width: 768px) {
+    .header-center { position: static; transform: none; justify-content: flex-start; padding-left: 10px; }
+    .page-title { font-size: 1.1rem; }
+    .header-left { gap: 8px; }
+}
+
+/* Slight visual polish for header toggles and logo */
+.sidebar-toggle i { font-size: 18px; }
+.header-logo { transition: transform 0.18s ease; }
+.header-logo--compact { transition: transform 0.18s ease; }
+
+/* When sidebar is collapsed (JS toggles .collapsed on .sidebar), reduce logo size */
+.sidebar.collapsed ~ .main-content .header-logo { transform: scale(0.9); }
+
+/* Keep header higher than sidebar overlay on mobile */
+.header { z-index: 2001; }
+
+/* --- Logo & Toggle Variants (Desktop vs Mobile) --- */
+/* Use `.header-logo` for img/logo element and `.header-logo--compact` for a compact icon variant */
+.header-logo {
+    width: 48px; /* recommended desktop size */
+    height: 48px;
+    object-fit: contain;
+    border-radius: 8px;
+    display: block;
+}
+
+/* compact logo for collapsed sidebar or mobile header */
+.header-logo--compact {
+    width: 120px; /* recommended mobile compact size */
+    height: 40px;
+    border-radius: 8px;
+    display: none; /* toggled visible on mobile or when needed */
+}
+
+/* Desktop: show full logo, compact toggle (icon-only) */
+@media (min-width: 769px) {
+    .header-logo { display: block; }
+    .header-logo--compact { display: none; }
+
+    /* Keep sidebar-toggle compact on desktop */
+    .sidebar-toggle { width: 40px; height: 40px; }
+    .mobile-toggle { display: none !important; }
+}
+
+/* Mobile: show compact logo and prominent mobile toggle */
+@media (max-width: 768px) {
+    /* swap logos: hide full logo, show compact variant */
+    .header-logo { display: none; }
+    .header-logo--compact { display: block; }
+
+    /* make the desktop sidebar toggle visually hidden on mobile */
+    .sidebar-toggle.desktop-toggle { display: none !important; }
+
+    /* mobile toggle: larger touch target, clear visual */
+    .mobile-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        background: rgba(0,0,0,0.04);
+        color: var(--primary-color);
+        border: 1px solid rgba(0,0,0,0.04);
+        margin-right: 10px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        transition: all 0.18s ease;
+        touch-action: manipulation; /* improve tap responsiveness */
+    }
+
+    .mobile-toggle:active,
+    .mobile-toggle:focus {
+        transform: scale(0.98);
+        outline: none;
+        box-shadow: var(--shadow);
+    }
+
+    /* when mobile sidebar is open, make sure header-left items sit above overlay */
+    .header-left { z-index: 2001; }
+}
+
+/* Mobile header layout tweaks */
+@media (max-width: 768px) {
+    .header { padding: 0 12px; }
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .mobile-toggle { width: 44px; height: 44px; border-radius: 10px; }
+    .header-logo--compact { display: block; margin-left: 4px; }
+    .mobile-page-title { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+}
+
+/* Utility helpers to switch which logo is visible via JS if needed */
+.hide-on-desktop { display: none; }
+.show-on-desktop { display: block; }
+.hide-on-mobile { display: block; }
+.show-on-mobile { display: none; }
+
+@media (max-width: 768px) {
+    .hide-on-desktop { display: block; }
+    .show-on-desktop { display: none; }
+    .hide-on-mobile { display: none; }
+    .show-on-mobile { display: block; }
 }
 
 .user-menu {
@@ -540,15 +702,17 @@ body {
     font-size: 0.95rem;
 }
 
-/* Responsive Design */
+/* Mobile Responsive Styles - ADDED */
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
         width: var(--sidebar-width);
+        z-index: 1050;
     }
     
     .sidebar.show {
         transform: translateX(0);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
     }
     
     .sidebar.collapsed {
@@ -557,6 +721,7 @@ body {
     
     .main-content {
         margin-left: 0;
+        width: 100%;
     }
     
     .sidebar.collapsed ~ .main-content {
@@ -569,8 +734,63 @@ body {
     
     .header {
         padding: 0 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* ensure header stays above sidebar overlay on mobile */
+    z-index: 2000;
+    }
+    
+    .main-content {
+        padding-top: var(--header-height);
+    }
+    
+    /* Mobile overlay when sidebar is open */
+    .sidebar.show::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: var(--sidebar-width);
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
     }
 }
+
+/* Mobile Toggle Button */
+.mobile-toggle {
+    display: none;
+}
+
+/* Show mobile toggle on small screens, hide desktop toggle there */
+@media (max-width: 768px) {
+    .mobile-toggle {
+        display: flex !important;
+    }
+
+    .sidebar-toggle.desktop-toggle {
+        display: none !important;
+    }
+
+    /* ensure the overlay sits above content but below header */
+    .sidebar.show {
+        z-index: 1055;
+    }
+
+    .sidebar.show::before {
+        /* the overlay background already defined; increase z-index so it blocks clicks */
+        z-index: 1054;
+    }
+}
+
+/* Prevent body scrolling when sidebar is open on mobile */
+body.sidebar-open {
+    overflow: hidden;
+}
+
+/* ... rest of existing styles ... */
 
 @media (max-width: 576px) {
     .dashboard-card {
@@ -655,3 +875,15 @@ body {
 .mt-3 {
     margin-top: 1rem !important;
 }
+
+/* Logo in header */
+.header-logo {
+    width: 150px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 6px;
+    display: block;
+}
+
+/* spacing for desktop logo within header-left */
+.header-left .show-on-desktop .header-logo { margin-right: 12px; }

@@ -5,51 +5,75 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeTooltips();
     initializeFormValidation();
     initializeCharts();
+    initializeDarkMode();
+    initializeSearch();
+    initializeDataTables();
 });
 
-// Sidebar Toggle Functionality
+// Sidebar Toggle Functionality - FIXED
 function initializeSidebar() {
     const sidebar = document.querySelector('.sidebar');
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    const mainContent = document.querySelector('.main-content');
-    
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            
-            // Save sidebar state in localStorage
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
-        });
-    }
-    
-    // Restore sidebar state from localStorage
+    const mobileToggle = document.querySelector('.sidebar-toggle.mobile-toggle');
+    const desktopToggle = document.querySelector('.sidebar-toggle.desktop-toggle');
+
+    if (!sidebar) return; // nothing to do
+
+    // Restore desktop collapsed state from localStorage
     const savedState = localStorage.getItem('sidebarCollapsed');
-    if (savedState === 'true') {
+    if (savedState === 'true' && window.innerWidth > 768) {
         sidebar.classList.add('collapsed');
     }
-    
-    // Mobile sidebar toggle
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    if (mobileToggle) {
-        mobileToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('show');
+
+    // Desktop toggle: collapse/expand and persist
+    if (desktopToggle) {
+        desktopToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebar.classList.toggle('collapsed');
+            // persist only for desktop
+            if (window.innerWidth > 768) {
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }
         });
     }
-    
+
+    // Mobile toggle: show/hide overlay sidebar and lock body scroll
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebar.classList.toggle('show');
+            document.body.classList.toggle('sidebar-open', sidebar.classList.contains('show'));
+        });
+    }
+
     // Close sidebar on mobile when clicking outside
     document.addEventListener('click', function(e) {
         if (window.innerWidth <= 768) {
-            if (!sidebar.contains(e.target) && !e.target.closest('.sidebar-toggle')) {
-                sidebar.classList.remove('show');
+            const target = e.target;
+            if (!sidebar.contains(target) && !target.closest('.sidebar-toggle')) {
+                if (sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    document.body.classList.remove('sidebar-open');
+                }
             }
         }
     });
-    
-    // Handle window resize
+
+    // Handle window resize: ensure classes are sane when switching breakpoints
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {
-            sidebar.classList.remove('show');
+            // remove mobile-only state
+            if (sidebar.classList.contains('show')) {
+                sidebar.classList.remove('show');
+                document.body.classList.remove('sidebar-open');
+            }
+            // restore desktop preference
+            const desktopSaved = localStorage.getItem('sidebarCollapsed');
+            if (desktopSaved === 'true') {
+                sidebar.classList.add('collapsed');
+            }
+        } else {
+            // small screens should not use collapsed state
+            sidebar.classList.remove('collapsed');
         }
     });
 }
@@ -435,21 +459,33 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDataTables();
 });
 
-// Global error handler
-window.addEventListener('error', function(e) {
-    console.error('Global error:', e.error);
-    // You can send this to your logging service
-});
-
-// Service Worker Registration (optional)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-                console.log('SW registered: ', registration);
+        // Only register if the file exists
+        fetch('/sw.js', { method: 'HEAD' })
+            .then(response => {
+                if (response.ok) {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(function(registration) {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch(function(registrationError) {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                }
             })
-            .catch(function(registrationError) {
-                console.log('SW registration failed: ', registrationError);
+            .catch(() => {
+                console.log('Service Worker file not found, skipping registration');
             });
     });
 }
+
+// Global error handler - FIXED
+window.addEventListener('error', function(e) {
+    console.error('Global error:', e.error);
+    // Filter out null errors (common with third-party scripts)
+    if (e.error !== null) {
+        // You can send this to your logging service
+        console.log('Meaningful error occurred:', e.error);
+    }
+});

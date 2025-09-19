@@ -328,74 +328,85 @@ include '../includes/sidebar.php';
 
 <?php
 $pageScripts = "
-    // Initialize Charts
+    // Initialize Charts - FIXED duplicate chart initialization
     document.addEventListener('DOMContentLoaded', function() {
+        // Destroy existing charts if they exist
+        if (typeof Chart !== 'undefined') {
+            Chart.helpers.each(Chart.instances, function(instance) {
+                instance.destroy();
+            });
+        }
+        
         // Enrollment Chart
-        const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
-        new Chart(enrollmentCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'New Students',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: 'rgb(74, 107, 255)',
-                    backgroundColor: 'rgba(74, 107, 255, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        const enrollmentCtx = document.getElementById('enrollmentChart');
+        if (enrollmentCtx) {
+            new Chart(enrollmentCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Students',
+                        data: [12, 19, 15, 25, 22, 30],
+                        borderColor: 'rgb(74, 107, 255)',
+                        backgroundColor: 'rgba(74, 107, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f1f5f9'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     },
-                    x: {
-                        grid: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Attendance Chart
+        const attendanceCtx = document.getElementById('attendanceChart');
+        if (attendanceCtx) {
+            new Chart(attendanceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent', 'Late'],
+                    datasets: [{
+                        data: [{$attendanceStats['present']}, {$attendanceStats['absent']}, {$attendanceStats['late']}],
+                        backgroundColor: [
+                            'rgb(74, 107, 255)',
+                            '#dc3545',
+                            '#ffc107'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
                             display: false
                         }
                     }
                 }
-            }
-        });
-        
-        // Attendance Chart
-        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
-        new Chart(attendanceCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Present', 'Absent', 'Late'],
-                datasets: [{
-                    data: [{$attendanceStats['present']}, {$attendanceStats['absent']}, {$attendanceStats['late']}],
-                    backgroundColor: [
-                        'rgb(74, 107, 255)',
-                        '#dc3545',
-                        '#ffc107'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
+            });
+        }
     });
 ";
 

@@ -38,12 +38,39 @@ requireAuth();
     
     <header class="header">
         <div class="header-left">
-            <button class="sidebar-toggle" type="button">
+            <!-- Mobile toggle (icon-only) separated from logo -->
+            <button class="sidebar-toggle mobile-toggle" aria-label="Toggle sidebar (mobile)">
                 <i class="fas fa-bars"></i>
             </button>
-            <h1 class="page-title"><?php echo $pageTitle ?? 'Dashboard'; ?></h1>
+
+            <!-- Mobile compact logo (separate for better layout) -->
+            <img src="../assets/img/logo/logo-compact.png" alt="<?php echo APP_NAME; ?>" class="header-logo--compact show-on-mobile" onerror="this.onerror=null;this.src='../assets/img/logo/logo.png'">
+
+            <!-- Desktop toggle (icon-only) -->
+            <button class="sidebar-toggle desktop-toggle" aria-label="Toggle sidebar (desktop)">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Full logo for desktop: use show-on-desktop helper to avoid Bootstrap breakpoint mismatches -->
+            <a href="./" class="align-items-center ms-3 show-on-desktop">
+                <img src="../assets/img/logo/logo.png" alt="<?php echo APP_NAME; ?>" class="header-logo me-2" onerror="this.onerror=null;this.src='../assets/img/logo/logo-compact.png'">
+                <span class="fw-bold d-none d-lg-inline-block text-truncate" style="max-width:200px"><?php echo APP_NAME; ?></span>
+            </a>
+
+            <!-- Mobile inline page title removed per request -->
         </div>
-        
+
+        <div class="header-center d-none d-md-flex align-items-center justify-content-center">
+            <h1 class="page-title"><?php echo $pageTitle; ?></h1>
+            <!-- optional search field (unobtrusive) -->
+            <form class="ms-3 d-none d-lg-flex" role="search" action="#" method="get">
+                <div class="input-group">
+                    <input type="search" name="q" class="form-control form-control-sm" placeholder="Search students, classes...">
+                    <button class="btn btn-sm btn-primary" type="submit"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+
         <div class="header-right">
             <!-- Notifications -->
             <div class="dropdown me-3">
