@@ -108,3 +108,15 @@ CREATE INDEX idx_students_class ON students(class_id);
 CREATE INDEX idx_attendance_date ON attendance(date);
 CREATE INDEX idx_marks_student_subject ON marks(student_id, subject_id);
 CREATE INDEX idx_notices_active ON notices(is_active, created_at);
+
+
+
+-- updated structure 
+-- ALTER TABLE students ADD COLUMN full_name VARCHAR(100) AFTER roll_no;
+-- ALTER TABLE teachers ADD COLUMN full_name VARCHAR(100) AFTER user_id;
+
+---- Remove the foreign key constraint (the name may vary, adjust if needed)
+--ALTER TABLE subjects DROP FOREIGN KEY subjects_ibfk_1;
+
+-- Remove the class_id column from subjects
+--ALTER TABLE subjects DROP COLUMN class_id;

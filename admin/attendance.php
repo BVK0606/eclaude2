@@ -71,23 +71,14 @@ try {
     error_log("Fetch classes error: " . $e->getMessage());
 }
 
-// Get subjects based on selected class
+// Get all subjects for dropdown (global subjects, not filtered by class)
 $subjects = [];
-if (isset($_POST['class_id']) && !empty($_POST['class_id'])) {
-    $classId = $_POST['class_id'];
-    try {
-        $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare("
-            SELECT subject_id, subject_name 
-            FROM subjects 
-            WHERE class_id = ? 
-            ORDER BY subject_name
-        ");
-        $stmt->execute([$classId]);
-        $subjects = $stmt->fetchAll();
-    } catch (PDOException $e) {
-        error_log("Fetch subjects error: " . $e->getMessage());
-    }
+try {
+    $db = Database::getInstance()->getConnection();
+    $stmt = $db->query("SELECT subject_id, subject_name FROM subjects ORDER BY subject_name");
+    $subjects = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Fetch subjects error: " . $e->getMessage());
 }
 
 // Get students based on selected class

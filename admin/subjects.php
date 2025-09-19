@@ -13,28 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_subject'])) {
         $error = 'Invalid security token. Please try again.';
     } else {
         $subjectName = sanitizeInput($_POST['subject_name'] ?? '');
-        $classId = sanitizeInput($_POST['class_id'] ?? '');
-        
-        if (empty($subjectName) || empty($classId)) {
-            $error = 'Please fill in all required fields.';
+        if (empty($subjectName)) {
+            $error = 'Please enter a subject name.';
         } else {
             try {
                 $db = Database::getInstance()->getConnection();
-                
-                // Check if subject already exists for this class
-                $stmt = $db->prepare("SELECT COUNT(*) FROM subjects WHERE subject_name = ? AND class_id = ?");
-                $stmt->execute([$subjectName, $classId]);
+                // Check if subject already exists (global)
+                $stmt = $db->prepare("SELECT COUNT(*) FROM subjects WHERE subject_name = ?");
+                $stmt->execute([$subjectName]);
                 $exists = $stmt->fetchColumn();
-                
                 if ($exists > 0) {
-                    $error = 'Subject already exists for this class.';
+                    $error = 'Subject already exists.';
                 } else {
-                    // Insert subject
-                    $stmt = $db->prepare("INSERT INTO subjects (subject_name, class_id) VALUES (?, ?)");
-                    $stmt->execute([$subjectName, $classId]);
-                    
+                    // Insert subject (no class)
+                    $stmt = $db->prepare("INSERT INTO subjects (subject_name) VALUES (?)");
+                    $stmt->execute([$subjectName]);
                     $success = 'Subject added successfully!';
-                    $_POST = []; // Clear form
+                    $_POST = [];
                 }
             } catch (PDOException $e) {
                 $error = 'Failed to add subject. Please try again later.';
@@ -68,30 +63,17 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// Get all subjects with class information
+// Get all subjects (global, no class)
 try {
     $db = Database::getInstance()->getConnection();
-    $stmt = $db->query("
-        SELECT s.*, c.class_name
-        FROM subjects s
-        LEFT JOIN classes c ON s.class_id = c.class_id
-        ORDER BY c.class_name, s.subject_name
-    ");
+    $stmt = $db->query("SELECT * FROM subjects ORDER BY subject_name");
     $subjects = $stmt->fetchAll();
 } catch (PDOException $e) {
     $subjects = [];
     error_log("Fetch subjects error: " . $e->getMessage());
 }
 
-// Get classes for dropdown
-try {
-    $db = Database::getInstance()->getConnection();
-    $stmt = $db->query("SELECT class_id, class_name FROM classes ORDER BY class_name");
-    $classes = $stmt->fetchAll();
-} catch (PDOException $e) {
-    $classes = [];
-    error_log("Fetch classes error: " . $e->getMessage());
-}
+
 
 // Check for messages from other pages
 if (isset($_SESSION['success'])) {
@@ -159,23 +141,7 @@ include '../includes/sidebar.php';
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="class_id" class="form-label">
-                                <i class="fas fa-school me-1"></i>Class <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="class_id" name="class_id" required>
-                                <option value="">Select Class</option>
-                                <?php foreach ($classes as $class): ?>
-                                    <option value="<?php echo $class['class_id']; ?>" 
-                                        <?php echo (($_POST['class_id'] ?? '') == $class['class_id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($class['class_name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <div class="invalid-feedback">
-                                Please select a class.
-                            </div>
-                        </div>
+
                         
                         <button type="submit" name="add_subject" class="btn btn-primary w-100">
                             <i class="fas fa-plus me-2"></i>Add Subject
@@ -202,7 +168,6 @@ include '../includes/sidebar.php';
                                 <thead>
                                     <tr>
                                         <th>Subject Name</th>
-                                        <th>Class</th>
                                         <th>Created Date</th>
                                         <th>Actions</th>
                                     </tr>
@@ -212,9 +177,6 @@ include '../includes/sidebar.php';
                                         <tr>
                                             <td>
                                                 <span class="fw-semibold"><?php echo htmlspecialchars($subject['subject_name']); ?></span>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary"><?php echo htmlspecialchars($subject['class_name']); ?></span>
                                             </td>
                                             <td><?php echo date('M d, Y', strtotime($subject['created_at'])); ?></td>
                                             <td>

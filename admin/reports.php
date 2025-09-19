@@ -36,10 +36,10 @@ try {
     
     // Class-wise student count
     $stmt = $db->query("
-        SELECT c.class_name, COUNT(s.student_id) as student_count
+        SELECT c.class_id, c.class_name, COUNT(s.student_id) as student_count
         FROM classes c
         LEFT JOIN students s ON c.class_id = s.class_id
-        GROUP BY c.class_id
+        GROUP BY c.class_id, c.class_name
         ORDER BY c.class_name
     ");
     $classStats = $stmt->fetchAll();
@@ -158,12 +158,16 @@ include '../includes/sidebar.php';
                                                 <span class="fw-semibold"><?php echo htmlspecialchars($class['class_name']); ?></span>
                                             </td>
                                             <td>
-                                                <span class="badge bg-primary"><?php echo $class['student_count']; ?> students</span>
+                                                <span class="badge bg-primary"><?php echo (int)$class['student_count']; ?> students</span>
                                             </td>
                                             <td>
-                                                <a href="class-report.php?id=<?php echo $class['class_id']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-chart-bar me-1"></i>View Report
-                                                </a>
+                                                <?php if ((int)$class['student_count'] > 0): ?>
+                                                    <a href="class-report.php?id=<?php echo $class['class_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-chart-bar me-1"></i>View Report
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span class="text-muted small">No students</span>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

@@ -7,31 +7,17 @@ $pageTitle = 'Admin Dashboard';
 // Get dashboard statistics
 try {
     $db = Database::getInstance()->getConnection();
-    
-    // Total students
-    $stmt = $db->query("SELECT COUNT(*) as total FROM students");
-    $totalStudents = $stmt->fetch()['total'];
-    
-    // Total teachers
-    $stmt = $db->query("SELECT COUNT(*) as total FROM teachers");
-    $totalTeachers = $stmt->fetch()['total'];
-    
-    // Total classes
-    $stmt = $db->query("SELECT COUNT(*) as total FROM classes");
-    $totalClasses = $stmt->fetch()['total'];
-    
-    // Total subjects
-    $stmt = $db->query("SELECT COUNT(*) as total FROM subjects");
-    $totalSubjects = $stmt->fetch()['total'];
-    
-    // Recent students (last 7 days)
-    $stmt = $db->query("SELECT COUNT(*) as total FROM students WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
-    $recentStudents = $stmt->fetch()['total'];
-    
-    // Recent teachers (last 7 days)
-    $stmt = $db->query("SELECT COUNT(*) as total FROM teachers WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
-    $recentTeachers = $stmt->fetch()['total'];
-    
+
+    // Use COUNT(*) efficiently
+    $totalStudents = (int)($db->query("SELECT COUNT(*) FROM students")->fetchColumn() ?? 0);
+    $totalTeachers = (int)($db->query("SELECT COUNT(*) FROM teachers")->fetchColumn() ?? 0);
+    $totalClasses = (int)($db->query("SELECT COUNT(*) FROM classes")->fetchColumn() ?? 0);
+    $totalSubjects = (int)($db->query("SELECT COUNT(*) FROM subjects")->fetchColumn() ?? 0);
+
+    // Recent students/teachers (last 7 days)
+    $recentStudents = (int)($db->query("SELECT COUNT(*) FROM students WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn() ?? 0);
+    $recentTeachers = (int)($db->query("SELECT COUNT(*) FROM teachers WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn() ?? 0);
+
     // Get recent students for table
     $stmt = $db->query("
         SELECT s.roll_no, u.uname as name, u.email, c.class_name, s.created_at
@@ -42,14 +28,32 @@ try {
         LIMIT 5
     ");
     $recentStudentsList = $stmt->fetchAll();
-    
-    // Get attendance statistics (mock data for demo)
-    $attendanceStats = [
-        'present' => 85,
-        'absent' => 10,
-        'late' => 5
+
+    // Real attendance statistics for today
+    $today = date('Y-m-d');
+    $attendanceTotals = [
+        'present' => 0,
+        'absent' => 0,
+        'late' => 0
     ];
-    
+    $stmt = $db->prepare("SELECT status, COUNT(*) as count FROM attendance WHERE date = ? GROUP BY status");
+    $stmt->execute([$today]);
+    $totalAttendance = 0;
+    foreach ($stmt->fetchAll() as $row) {
+        $status = $row['status'];
+        $count = (int)$row['count'];
+        if (isset($attendanceTotals[$status])) {
+            $attendanceTotals[$status] = $count;
+            $totalAttendance += $count;
+        }
+    }
+    // Calculate percentages
+    $attendanceStats = [
+        'present' => $totalAttendance ? round($attendanceTotals['present'] * 100 / $totalAttendance) : 0,
+        'absent' => $totalAttendance ? round($attendanceTotals['absent'] * 100 / $totalAttendance) : 0,
+        'late' => $totalAttendance ? round($attendanceTotals['late'] * 100 / $totalAttendance) : 0
+    ];
+
 } catch (PDOException $e) {
     error_log("Dashboard error: " . $e->getMessage());
     $totalStudents = $totalTeachers = $totalClasses = $totalSubjects = 0;

@@ -4,31 +4,31 @@ requireRole('admin');
 
 $pageTitle = 'Manage Students';
 
-// Handle delete action
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $studentId = $_GET['delete'];
-    
+// Handle delete action with CSRF protection and validation
+if (isset($_GET['delete']) && is_numeric($_GET['delete']) && isset($_GET['csrf_token'])) {
+    $studentId = (int)$_GET['delete'];
+    $csrfToken = $_GET['csrf_token'];
+    if (!validateCSRFToken($csrfToken)) {
+        $_SESSION['error'] = 'Invalid security token. Please try again.';
+        header('Location: manage-students.php');
+        exit;
+    }
     try {
         $db = Database::getInstance()->getConnection();
-        
         // Get user_id from student record
         $stmt = $db->prepare("SELECT user_id FROM students WHERE student_id = ?");
         $stmt->execute([$studentId]);
         $student = $stmt->fetch();
-        
         if ($student) {
             // Delete student (this will cascade to delete the user due to foreign key constraint)
             $stmt = $db->prepare("DELETE FROM students WHERE student_id = ?");
             $stmt->execute([$studentId]);
-            
             $_SESSION['success'] = 'Student deleted successfully.';
         } else {
             $_SESSION['error'] = 'Student not found.';
         }
-        
         header('Location: manage-students.php');
         exit;
-        
     } catch (PDOException $e) {
         $_SESSION['error'] = 'Failed to delete student. Please try again later.';
         error_log("Delete student error: " . $e->getMessage());
@@ -37,17 +37,16 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// Get all students with their details
+// Get all students with their details (optimized)
 try {
     $db = Database::getInstance()->getConnection();
-    $stmt = $db->query("
-        SELECT s.student_id, s.roll_no, s.full_name, s.dob, s.address, s.created_at,
-               c.class_name, u.email
+    $stmt = $db->query(
+        "SELECT s.student_id, s.roll_no, s.full_name, s.dob, s.address, s.created_at, c.class_name, u.email
         FROM students s
         LEFT JOIN classes c ON s.class_id = c.class_id
         LEFT JOIN users u ON s.user_id = u.id
-        ORDER BY s.created_at DESC
-    ");
+        ORDER BY s.created_at DESC"
+    );
     $students = $stmt->fetchAll();
 } catch (PDOException $e) {
     $students = [];
