@@ -1,3 +1,11 @@
+<div class="nav-item">
+    <a href="assigned-classes.php" class="nav-link <?php echo ($currentPage == 'assigned-classes') ? 'active' : ''; ?>">
+        <div class="nav-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <span class="nav-text">Assigned Classes</span>
+    </a>
+</div>
 <?php
 if (!defined('APP_NAME')) {
     require_once '../config.php';
@@ -9,21 +17,27 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <a href="../<?php echo $currentRole; ?>/dashboard.php" class="brand">
+        <a href="../homepage/home.php" class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <span class="brand-text">Home</span>
+        </a>
+        <a href="../<?php echo $currentRole; ?>/dashboard.php" class="brand ms-3">
             <div class="brand-icon">
                 <i class="fas fa-graduation-cap"></i>
             </div>
             <span class="brand-text"><?php echo APP_NAME; ?></span>
         </a>
     </div>
-    
+
     <div class="sidebar-nav">
         <?php if ($currentRole == 'admin'): ?>
-            <!-- Admin Navigation -->
+            <!-- Admin Navigation with dropdowns (latest way) -->
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <div class="nav-item">
-                    <a href="dashboard.php" class="nav-link <?php echo ($currentPage == 'dashboard') ? 'active' : ''; ?>">
+                    <a href="../admin/dashboard.php" class="nav-link <?php echo ($currentPage == 'dashboard') ? 'active' : ''; ?>">
                         <div class="nav-icon">
                             <i class="fas fa-tachometer-alt"></i>
                         </div>
@@ -31,7 +45,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     </a>
                 </div>
             </div>
-            
+
             <div class="nav-section">
                 <div class="nav-section-title">User Management</div>
                 <div class="nav-item">
@@ -61,7 +75,6 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         </div>
                     </div>
                 </div>
-                
                 <div class="nav-item">
                     <a href="#teachersSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
                         <div class="nav-icon">
@@ -90,215 +103,317 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     </div>
                 </div>
             </div>
-            
+
             <div class="nav-section">
                 <div class="nav-section-title">Academic</div>
                 <div class="nav-item">
-                    <a href="classes.php" class="nav-link <?php echo ($currentPage == 'classes') ? 'active' : ''; ?>">
+                    <a href="#classesSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
                         <div class="nav-icon">
                             <i class="fas fa-school"></i>
                         </div>
                         <span class="nav-text">Classes</span>
+                        <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
-                </div>
-                <div class="nav-item">
-                    <a href="subjects.php" class="nav-link <?php echo ($currentPage == 'subjects') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-book"></i>
+                    <div class="collapse submenu" id="classesSubmenu">
+                        <div class="nav-item">
+                            <a href="classes.php" class="nav-link <?php echo ($currentPage == 'classes') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                                <span class="nav-text">Manage Classes</span>
+                            </a>
                         </div>
-                        <span class="nav-text">Subjects</span>
-                    </a>
-                </div>
-                <div class="nav-item">
-                    <a href="attendance.php" class="nav-link <?php echo ($currentPage == 'attendance') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-calendar-check"></i>
+                        <div class="nav-item">
+                            <a href="assign-class.php" class="nav-link <?php echo ($currentPage == 'assign-class') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <span class="nav-text">Assign Class</span>
+                            </a>
                         </div>
-                        <span class="nav-text">Attendance</span>
-                    </a>
-                </div>
-                <div class="nav-item">
-                    <a href="marks.php" class="nav-link <?php echo ($currentPage == 'marks') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-chart-bar"></i>
+                        <div class="nav-item">
+                            <a href="assigned-classes.php" class="nav-link <?php echo ($currentPage == 'assigned-classes') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <span class="nav-text">Assigned Classes</span>
+                            </a>
                         </div>
-                        <span class="nav-text">Marks</span>
-                    </a>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Communication</div>
                 <div class="nav-item">
-                    <a href="notices.php" class="nav-link <?php echo ($currentPage == 'notices') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-bullhorn"></i>
-                        </div>
-                        <span class="nav-text">Notices</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Reports</div>
-                <div class="nav-item">
-                    <a href="reports.php" class="nav-link <?php echo ($currentPage == 'reports') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <span class="nav-text">Reports</span>
-                    </a>
-                </div>
-            </div>
-            
-        <?php elseif ($currentRole == 'teacher'): ?>
-            <!-- Teacher Navigation -->
-            <div class="nav-section">
-                <div class="nav-section-title">Main</div>
-                <div class="nav-item">
-                    <a href="dashboard.php" class="nav-link <?php echo ($currentPage == 'dashboard') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-tachometer-alt"></i>
-                        </div>
-                        <span class="nav-text">Dashboard</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Classes</div>
-                <div class="nav-item">
-                    <a href="my-classes.php" class="nav-link <?php echo ($currentPage == 'my-classes') ? 'active' : ''; ?>">
+                    <a href="#subjectsSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
                         <div class="nav-icon">
                             <i class="fas fa-school"></i>
                         </div>
-                        <span class="nav-text">My Classes</span>
+                        <span class="nav-text">Subjects</span>
+                        <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
-                </div>
-                <div class="nav-item">
-                    <a href="my-subjects.php" class="nav-link <?php echo ($currentPage == 'my-subjects') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-book"></i>
+                    <div class="collapse submenu" id="subjectsSubmenu">
+                        <div class="nav-item">
+                            <a href="subjects.php" class="nav-link <?php echo ($currentPage == 'subjects') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                                <span class="nav-text">Manage subjects</span>
+                            </a>
                         </div>
-                        <span class="nav-text">My Subjects</span>
-                    </a>
+                        <div class="nav-item">
+                            <a href="assign-subject.php" class="nav-link <?php echo ($currentPage == 'assign-subject') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <span class="nav-text">Assign Subject</span>
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="assigned-subjects.php" class="nav-link <?php echo ($currentPage == 'assigned-subjects') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <span class="nav-text">Assigned Subjects</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Academic</div>
                 <div class="nav-item">
-                    <a href="attendance.php" class="nav-link <?php echo ($currentPage == 'attendance') ? 'active' : ''; ?>">
+                    <a href="#attendanceSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
                         <div class="nav-icon">
-                            <i class="fas fa-calendar-check"></i>
+                            <i class="fas fa-school"></i>
                         </div>
                         <span class="nav-text">Attendance</span>
+                        <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
+                    <div class="collapse submenu" id="attendanceSubmenu">
+                        <div class="nav-item">
+                            <a href="attendance.php" class="nav-link <?php echo ($currentPage == 'manage-attendance') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                                <span class="nav-text">Manage Attendance</span>
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="attendance-records.php" class="nav-link <?php echo ($currentPage == 'view-attendance') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <span class="nav-text">View Attendance</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="nav-item">
-                    <a href="marks.php" class="nav-link <?php echo ($currentPage == 'marks') ? 'active' : ''; ?>">
+                    <a href="#marksSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
                         <div class="nav-icon">
-                            <i class="fas fa-chart-bar"></i>
+                            <i class="fas fa-school"></i>
                         </div>
-                        <span class="nav-text">Marks Entry</span>
+                        <span class="nav-text">Marks</span>
+                        <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
+                    <div class="collapse submenu" id="marksSubmenu">
+                        <div class="nav-item">
+                            <a href="marks.php" class="nav-link <?php echo ($currentPage == 'manage-marks') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                                <span class="nav-text">Manage Marks</span>
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="marks-records.php" class="nav-link <?php echo ($currentPage == 'view-marks') ? 'active' : ''; ?>">
+                                <div class="nav-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <span class="nav-text">View Marks</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Communication</div>
-                <div class="nav-item">
-                    <a href="notices.php" class="nav-link <?php echo ($currentPage == 'notices') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-bullhorn"></i>
-                        </div>
-                        <span class="nav-text">Notices</span>
-                    </a>
-                </div>
-            </div>
-            
-        <?php elseif ($currentRole == 'student'): ?>
-            <!-- Student Navigation -->
-            <div class="nav-section">
-                <div class="nav-section-title">Main</div>
-                <div class="nav-item">
-                    <a href="dashboard.php" class="nav-link <?php echo ($currentPage == 'dashboard') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-tachometer-alt"></i>
-                        </div>
-                        <span class="nav-text">Dashboard</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Academic</div>
-                <div class="nav-item">
-                    <a href="profile.php" class="nav-link <?php echo ($currentPage == 'profile') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span class="nav-text">My Profile</span>
-                    </a>
-                </div>
-                <div class="nav-item">
-                    <a href="attendance.php" class="nav-link <?php echo ($currentPage == 'attendance') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <span class="nav-text">My Attendance</span>
-                    </a>
-                </div>
-                <div class="nav-item">
-                    <a href="marks.php" class="nav-link <?php echo ($currentPage == 'marks') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <span class="nav-text">My Marks</span>
-                    </a>
-                </div>
-                <div class="nav-item">
-                    <a href="subjects.php" class="nav-link <?php echo ($currentPage == 'subjects') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <span class="nav-text">My Subjects</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Information</div>
-                <div class="nav-item">
-                    <a href="notices.php" class="nav-link <?php echo ($currentPage == 'notices') ? 'active' : ''; ?>">
-                        <div class="nav-icon">
-                            <i class="fas fa-bullhorn"></i>
-                        </div>
-                        <span class="nav-text">Notices</span>
-                    </a>
-                </div>
-            </div>
-        <?php endif; ?>
-        
-        <!-- Common Section for all roles -->
+        </div>
+        </div>
+        </div>
+
         <div class="nav-section">
-            <div class="nav-section-title">System</div>
+            <div class="nav-section-title">Communication</div>
             <div class="nav-item">
-                <a href="#" class="nav-link" onclick="toggleDarkMode()">
+                <a href="notices.php" class="nav-link <?php echo ($currentPage == 'notices') ? 'active' : ''; ?>">
                     <div class="nav-icon">
-                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-bullhorn"></i>
                     </div>
-                    <span class="nav-text">Dark Mode</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="../auth/logout.php" class="nav-link text-danger">
-                    <div class="nav-icon">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </div>
-                    <span class="nav-text">Logout</span>
+                    <span class="nav-text">Notices</span>
                 </a>
             </div>
         </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Reports</div>
+            <div class="nav-item">
+                <a href="reports.php" class="nav-link <?php echo ($currentPage == 'reports') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </div>
+        </div>
+
+    <?php elseif ($currentRole == 'teacher'): ?>
+        <!-- Teacher Navigation: Clean, one link per model -->
+        <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <div class="nav-item">
+                <a href="../teacher/dashboard.php" class="nav-link <?php echo ($currentPage == 'dashboard') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="my-classes.php" class="nav-link <?php echo ($currentPage == 'my-classes') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <span class="nav-text">My Classes</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="my-subjects.php" class="nav-link <?php echo ($currentPage == 'my-subjects') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <span class="nav-text">My Subjects</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="attendance.php" class="nav-link <?php echo ($currentPage == 'attendance') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <span class="nav-text">Manage Attendance</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="attendance-records.php" class="nav-link <?php echo ($currentPage == 'attendance-records') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <span class="nav-text">View Attendance</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="marks.php" class="nav-link <?php echo ($currentPage == 'marks') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <span class="nav-text">Marks Entry</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="marks-records.php" class="nav-link <?php echo ($currentPage == 'marks-records') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <span class="nav-text">View Marks</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                    <div class="nav-section-title">Notices</div>
+                    <div class="nav-item">
+                        <a href="notices.php" class="nav-link <?php echo ($currentPage == 'notices') ? 'active' : ''; ?>">
+                            <div class="nav-icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <span class="nav-text">View Notices</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="notices-manage.php" class="nav-link <?php echo ($currentPage == 'notices-manage') ? 'active' : ''; ?>">
+                            <div class="nav-icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <span class="nav-text">Manage Notices</span>
+                        </a>
+                    </div>
+                </div>
+        </div>
+
+    <?php elseif ($currentRole == 'student'): ?>
+        <!-- Student Navigation -->
+        <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <div class="nav-item">
+                <a href="../student/dashboard.php" class="nav-link <?php echo ($currentPage == 'dashboard') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Academic</div>
+            <div class="nav-item">
+                <a href="profile.php" class="nav-link <?php echo ($currentPage == 'profile') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="nav-text">My Profile</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="attendance.php" class="nav-link <?php echo ($currentPage == 'attendance') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <span class="nav-text">My Attendance</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="marks.php" class="nav-link <?php echo ($currentPage == 'marks') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <span class="nav-text">My Marks</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="subjects.php" class="nav-link <?php echo ($currentPage == 'subjects') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <span class="nav-text">My Subjects</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Information</div>
+            <div class="nav-item">
+                <a href="notices.php" class="nav-link <?php echo ($currentPage == 'notices') ? 'active' : ''; ?>">
+                    <div class="nav-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <span class="nav-text">Notices</span>
+                </a>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Common Section for all roles -->
+    <div class="nav-section">
+        <div class="nav-section-title">System</div>
+        <div class="nav-item">
+            <a href="../auth/logout.php" class="nav-link text-danger">
+                <div class="nav-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <span class="nav-text">Logout</span>
+            </a>
+        </div>
+    </div>
     </div>
 </nav>

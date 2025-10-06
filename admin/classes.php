@@ -1,37 +1,40 @@
 <?php
+// --- Classes Management Page ---
+// This file allows admin to add, view, and delete classes.
+// It is connected to other class services (edit, assign, report).
+
 require_once '../config.php';
-requireRole('admin');
+requireRole('admin'); // Only admin can access
 
 $pageTitle = 'Manage Classes';
 
-// Handle form submission for adding class
+// Initialize message variables
 $error = '';
 $success = '';
 
+// --- Add New Class ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_class'])) {
+    // CSRF protection
     if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid security token. Please try again.';
     } else {
+        // Get and sanitize class name
         $className = sanitizeInput($_POST['class_name'] ?? '');
-        
         if (empty($className)) {
             $error = 'Please enter a class name.';
         } else {
             try {
                 $db = Database::getInstance()->getConnection();
-                
                 // Check if class already exists
                 $stmt = $db->prepare("SELECT COUNT(*) FROM classes WHERE class_name = ?");
                 $stmt->execute([$className]);
                 $exists = $stmt->fetchColumn();
-                
                 if ($exists > 0) {
                     $error = 'Class already exists.';
                 } else {
-                    // Insert class
+                    // Insert new class
                     $stmt = $db->prepare("INSERT INTO classes (class_name) VALUES (?)");
                     $stmt->execute([$className]);
-                    
                     $success = 'Class added successfully!';
                     $_POST = []; // Clear form
                 }
@@ -43,31 +46,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_class'])) {
     }
 }
 
-// Handle delete action
+// --- Delete Class ---
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $classId = $_GET['delete'];
-    
     try {
         $db = Database::getInstance()->getConnection();
-        
-        // Check if class has students
+        // Check if class has students before deleting
         $stmt = $db->prepare("SELECT COUNT(*) FROM students WHERE class_id = ?");
         $stmt->execute([$classId]);
         $hasStudents = $stmt->fetchColumn();
-        
         if ($hasStudents > 0) {
             $_SESSION['error'] = 'Cannot delete class with students. Please reassign students first.';
         } else {
             // Delete class
             $stmt = $db->prepare("DELETE FROM classes WHERE class_id = ?");
             $stmt->execute([$classId]);
-            
             $_SESSION['success'] = 'Class deleted successfully.';
         }
-        
+        // Redirect to avoid resubmission
         header('Location: classes.php');
         exit;
-        
     } catch (PDOException $e) {
         $_SESSION['error'] = 'Failed to delete class. Please try again later.';
         error_log("Delete class error: " . $e->getMessage());
@@ -76,26 +74,30 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// Get all classes
+// --- Fetch All Classes ---
 try {
     $db = Database::getInstance()->getConnection();
-    $stmt = $db->query("
-        SELECT c.*, COUNT(s.student_id) as student_count
+    $stmt = $db->query(
+        "SELECT c.*, COUNT(s.student_id) as student_count
         FROM classes c
         LEFT JOIN students s ON c.class_id = s.class_id
         GROUP BY c.class_id
-        ORDER BY c.class_name
-    ");
+        ORDER BY c.class_name"
+    );
     $classes = $stmt->fetchAll();
 } catch (PDOException $e) {
     $classes = [];
     error_log("Fetch classes error: " . $e->getMessage());
 }
 
-// Check for messages from other pages
+// --- Show messages from other actions ---
 if (isset($_SESSION['success'])) {
     $success = $_SESSION['success'];
     unset($_SESSION['success']);
+}
+if (isset($_SESSION['error'])) {
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
 }
 
 if (isset($_SESSION['error'])) {

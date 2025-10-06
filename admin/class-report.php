@@ -1,7 +1,13 @@
 <?php
-require_once '../config.php';
-requireRole('admin');
+/* --- Class Report Page ---
+    This file shows the list of students in a class.
+    It is connected to classes.php and other class/student services.
+*/
 
+require_once '../config.php';
+requireRole('admin'); // Only admin can access
+
+// Get class ID from URL
 $classId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($classId <= 0) {
     die('Invalid class ID.');
@@ -9,12 +15,14 @@ if ($classId <= 0) {
 
 try {
     $db = Database::getInstance()->getConnection();
+    // Fetch class name
     $stmt = $db->prepare("SELECT class_name FROM classes WHERE class_id = ?");
     $stmt->execute([$classId]);
     $class = $stmt->fetch();
     if (!$class) {
         die('Class not found.');
     }
+    // Fetch students in the class
     $stmt = $db->prepare("SELECT roll_no, full_name FROM students WHERE class_id = ? ORDER BY roll_no");
     $stmt->execute([$classId]);
     $students = $stmt->fetchAll();

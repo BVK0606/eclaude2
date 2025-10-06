@@ -112,22 +112,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/auth.css">
 </head>
 <body>
+    <style>
+        body {
+            background: url('../assets/img/logo/back.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-card {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 500px;
+        }
+        .auth-header .auth-logo {
+            font-size: 2.5rem;
+            color: #0d6efd;
+        }
+        .forgot-info {
+            font-size: 0.95rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
     <div class="auth-container">
-        <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-card">
             <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="fas fa-user-plus"></i>
-                </div>
                 <h1 class="auth-title">Create Account</h1>
                 <p class="auth-subtitle">Join <?php echo APP_NAME; ?> today</p>
             </div>
             
             <?php if ($error): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <?php echo htmlspecialchars($error); ?>
+                    <!-- Forgot password info moved to modal only -->
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
@@ -280,6 +308,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </button>
                 
                 <div class="text-center">
+                    <p class="mb-2">
+                        <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotModal">
+                            Forgot your password?
+                        </a>
+                    </p>
                     <p class="mb-0">
                         Already have an account? 
                         <a href="login.php" class="text-decoration-none fw-semibold">
@@ -291,61 +324,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
     
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotModal" tabindex="-1" aria-labelledby="forgotModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="forgotModalLabel">Forgot Password Help</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>If you are a <strong>student</strong> or <strong>teacher</strong>, please contact your administrator to reset your password.<br>
+                        Admins can change user passwords directly from the admin dashboard.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+    </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <!-- Custom JS -->
     <script src="../assets/js/script.js"></script>
-    
-    <script>
-        // Toggle password visibility
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            const toggle = document.getElementById(inputId + '-toggle');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                toggle.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                input.type = 'password';
-                toggle.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        }
-        
-        // Password confirmation validation
-        document.getElementById('confirm_password').addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = this.value;
-            
-            if (password !== confirmPassword) {
-                this.setCustomValidity('Passwords do not match');
-            } else {
-                this.setCustomValidity('');
-            }
-        });
-        
-        // Real-time password strength indicator
-        document.getElementById('password').addEventListener('input', function() {
-            const password = this.value;
-            const strengthBar = document.getElementById('password-strength');
-            
-            if (strengthBar) {
-                let strength = 0;
-                
-                if (password.length >= 6) strength++;
-                if (/[a-z]/.test(password)) strength++;
-                if (/[A-Z]/.test(password)) strength++;
-                if (/[0-9]/.test(password)) strength++;
-                if (/[^A-Za-z0-9]/.test(password)) strength++;
-                
-                const strengthLevels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-                const strengthColors = ['danger', 'warning', 'info', 'success', 'success'];
-                
-                strengthBar.className = `progress-bar bg-${strengthColors[strength - 1]}`;
-                strengthBar.style.width = `${(strength / 5) * 100}%`;
-                strengthBar.textContent = strengthLevels[strength - 1] || '';
-            }
-        });
-    </script>
+    <script src="../assets/js/auth.js"></script>
 </body>
 </html>

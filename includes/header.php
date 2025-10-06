@@ -52,7 +52,7 @@ requireAuth();
             </button>
 
             <!-- Full logo for desktop: use show-on-desktop helper to avoid Bootstrap breakpoint mismatches -->
-            <a href="./" class="align-items-center ms-3 show-on-desktop">
+            <a href="../admin/dashboard.php" class="align-items-center ms-3 show-on-desktop">
                 <img src="../assets/img/logo/logo.png" alt="<?php echo APP_NAME; ?>" class="header-logo me-2" onerror="this.onerror=null;this.src='../assets/img/logo/logo-compact.png'">
                 <span class="fw-bold d-none d-lg-inline-block text-truncate" style="max-width:200px"><?php echo APP_NAME; ?></span>
             </a>
@@ -73,41 +73,77 @@ requireAuth();
 
         <div class="header-right">
             <!-- Notifications -->
+            <?php
+            // Build notifications from existing tables (students, teachers, classes)
+            $db = Database::getInstance()->getConnection();
+            $notifications = [];
+            // Recent students
+            $stmt = $db->query("SELECT full_name, created_at FROM students ORDER BY created_at DESC LIMIT 2");
+            foreach ($stmt->fetchAll() as $row) {
+                $notifications[] = [
+                    'icon' => 'fas fa-user-graduate text-primary',
+                    'title' => 'New student registered',
+                        'description' => htmlspecialchars($row['full_name'] ?? '') . ' joined.',
+                    'created_at' => $row['created_at']
+                ];
+            }
+            // Recent teachers
+            $stmt = $db->query("SELECT full_name, created_at FROM teachers ORDER BY created_at DESC LIMIT 1");
+            foreach ($stmt->fetchAll() as $row) {
+                $notifications[] = [
+                    'icon' => 'fas fa-chalkboard-teacher text-success',
+                    'title' => 'New teacher added',
+                    'description' => htmlspecialchars($row['full_name']) . ' joined.',
+                        'description' => htmlspecialchars($row['full_name'] ?? '') . ' joined.',
+                    'created_at' => $row['created_at']
+                ];
+            }
+            // Low attendance alert (dummy logic: pick a random class)
+            $stmt = $db->query("SELECT class_id, class_name FROM classes ORDER BY RAND() LIMIT 1");
+            if ($row = $stmt->fetch()) {
+                $notifications[] = [
+                    'icon' => 'fas fa-exclamation-triangle text-warning',
+                    'title' => 'Low attendance alert',
+                    'description' => 'Class ' . htmlspecialchars($row['class_name']) . ' has low attendance.',
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+            }
+            usort($notifications, function($a, $b) {
+                return strtotime($b['created_at']) - strtotime($a['created_at']);
+            });
+            $notifications = array_slice($notifications, 0, 5);
+            $unreadCount = count($notifications);
+            ?>
             <div class="dropdown me-3">
                 <button class="btn btn-link position-relative" data-bs-toggle="dropdown">
                     <i class="fas fa-bell fs-5 text-muted"></i>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                        3
+                        <?php echo $unreadCount; ?>
                     </span>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end" style="width: 300px;">
                     <div class="dropdown-header d-flex justify-content-between align-items-center">
                         <span>Notifications</span>
-                        <small class="text-muted">3 unread</small>
+                        <small class="text-muted"><?php echo $unreadCount; ?> unread</small>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-info-circle text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-2">
-                                <div class="fw-semibold">New student registered</div>
-                                <div class="small text-muted">John Doe has been added to class 10A</div>
-                            </div>
-                        </div>
-                    </a>
-                    <a href="#" class="dropdown-item">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-exclamation-triangle text-warning"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-2">
-                                <div class="fw-semibold">Low attendance alert</div>
-                                <div class="small text-muted">Class 12B has low attendance this week</div>
-                            </div>
-                        </div>
-                    </a>
+                    <?php if (empty($notifications)): ?>
+                        <div class="dropdown-item text-muted">No notifications</div>
+                    <?php else: ?>
+                        <?php foreach ($notifications as $note): ?>
+                            <a href="#" class="dropdown-item">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="<?php echo $note['icon']; ?>"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <div class="fw-semibold"><?php echo $note['title']; ?></div>
+                                        <div class="small text-muted"><?php echo $note['description']; ?></div>
+                                    </div>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                     <div class="dropdown-divider"></div>
                     <a href="#" class="dropdown-item text-center text-primary">
                         View all notifications
@@ -134,13 +170,10 @@ requireAuth();
                         <div class="small text-muted"><?php echo htmlspecialchars($_SESSION['email']); ?></div>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
+                    <a href="../includes/profile.php" class="dropdown-item">
                         <i class="fas fa-user me-2"></i>Profile
                     </a>
-                    <a href="#" class="dropdown-item">
-                        <i class="fas fa-cog me-2"></i>Settings
-                    </a>
-                    <a href="#" class="dropdown-item">
+                    <a href="../includes/help.php" class="dropdown-item">
                         <i class="fas fa-question-circle me-2"></i>Help
                     </a>
                     <div class="dropdown-divider"></div>

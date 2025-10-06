@@ -221,22 +221,22 @@ include '../includes/sidebar.php';
                     <h5 class="card-title mb-3">Export Reports</h5>
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="export-students.php" class="btn btn-outline-primary w-100">
+                            <a href="export/export-students.php" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-file-export me-2"></i>Export Students
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="export-teachers.php" class="btn btn-outline-success w-100">
+                            <a href="export/export-teachers.php" class="btn btn-outline-success w-100">
                                 <i class="fas fa-file-export me-2"></i>Export Teachers
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="export-attendance.php" class="btn btn-outline-warning w-100">
+                            <a href="export/export-attendance.php" class="btn btn-outline-warning w-100">
                                 <i class="fas fa-file-export me-2"></i>Export Attendance
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="export-marks.php" class="btn btn-outline-info w-100">
+                            <a href="export/export-marks.php" class="btn btn-outline-info w-100">
                                 <i class="fas fa-file-export me-2"></i>Export Marks
                             </a>
                         </div>

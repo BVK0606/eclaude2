@@ -68,6 +68,11 @@ include '../includes/sidebar.php';
 ?>
 
 <div class="main-content">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold text-primary text-center">Student Dashboard</h1>
+        </div>
+    </div>
     <div class="content">
         <!-- Welcome Section -->
         <div class="row mb-4">
@@ -105,7 +110,7 @@ include '../includes/sidebar.php';
             
             <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
                 <div class="dashboard-card text-center">
-                    <div class="card-value"><?php echo number_format($averageMarks, 1); ?>%</div>
+                    <div class="card-value"><?php echo number_format($averageMarks !== null ? $averageMarks : 0, 1); ?>%</div>
                     <div class="card-title">Average Marks</div>
                     <div class="small text-muted">Overall performance</div>
                 </div>

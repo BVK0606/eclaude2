@@ -22,12 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
                 $db = Database::getInstance()->getConnection();
                 
-                // Insert notice
-                $stmt = $db->prepare("INSERT INTO notices (title, description) VALUES (?, ?)");
-                $stmt->execute([$title, $description]);
-                
+                // Insert notice with created_by
+                $userId = $_SESSION['user_id'] ?? null;
+                $stmt = $db->prepare("INSERT INTO notices (title, description, created_by) VALUES (?, ?, ?)");
+                $stmt->execute([$title, $description, $userId]);
+
                 $success = 'Notice posted successfully!';
-                
+
                 // Clear form data on success
                 $_POST = [];
                 

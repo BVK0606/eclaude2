@@ -1,10 +1,15 @@
+
 <?php
+// --- Edit Class Page ---
+// This file allows admin to update the name of a class.
+// It is connected to classes.php and other class services.
+
 require_once '../config.php';
-requireRole('admin');
+requireRole('admin'); // Only admin can access
 
 $pageTitle = 'Edit Class';
 
-// Get class ID
+// Get class ID from URL
 $classId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$classId) {
     header('Location: classes.php');
@@ -14,7 +19,7 @@ if (!$classId) {
 $error = '';
 $success = '';
 
-// Fetch class
+// --- Fetch Class Data ---
 try {
     $db = Database::getInstance()->getConnection();
     $stmt = $db->prepare('SELECT * FROM classes WHERE class_id = ?');
@@ -28,16 +33,19 @@ try {
     $error = 'Failed to fetch class.';
 }
 
-// Handle form submission
+// --- Handle Form Submission ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // CSRF protection
     if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid security token. Please try again.';
     } else {
+        // Get and sanitize class name
         $className = sanitizeInput($_POST['class_name'] ?? '');
         if (empty($className)) {
             $error = 'Please enter a class name.';
         } else {
             try {
+                // Update class name
                 $stmt = $db->prepare('UPDATE classes SET class_name = ? WHERE class_id = ?');
                 $stmt->execute([$className, $classId]);
                 $success = 'Class updated successfully!';
