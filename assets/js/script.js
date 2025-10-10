@@ -10,133 +10,78 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDataTables();
 });
 
-// Sidebar Toggle Functionality - FIXED
+// Sidebar Toggle
 function initializeSidebar() {
     const sidebar = document.querySelector('.sidebar');
     const mobileToggle = document.querySelector('.sidebar-toggle.mobile-toggle');
     const desktopToggle = document.querySelector('.sidebar-toggle.desktop-toggle');
+    if (!sidebar) return;
 
-    if (!sidebar) return; // nothing to do
-
-    // Restore desktop collapsed state from localStorage
     const savedState = localStorage.getItem('sidebarCollapsed');
-    if (savedState === 'true' && window.innerWidth > 768) {
-        sidebar.classList.add('collapsed');
-    }
+    if (savedState === 'true' && window.innerWidth > 768) sidebar.classList.add('collapsed');
 
-    // Desktop toggle: collapse/expand and persist
-    if (desktopToggle) {
-        desktopToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            sidebar.classList.toggle('collapsed');
-            // persist only for desktop
-            if (window.innerWidth > 768) {
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-            }
-        });
-    }
+    desktopToggle?.addEventListener('click', e => {
+        e.preventDefault();
+        sidebar.classList.toggle('collapsed');
+        if (window.innerWidth > 768) localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    });
 
-    // Mobile toggle: show/hide overlay sidebar and lock body scroll
-    if (mobileToggle) {
-        mobileToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            sidebar.classList.toggle('show');
-            document.body.classList.toggle('sidebar-open', sidebar.classList.contains('show'));
-        });
-    }
+    mobileToggle?.addEventListener('click', e => {
+        e.preventDefault();
+        sidebar.classList.toggle('show');
+        document.body.classList.toggle('sidebar-open', sidebar.classList.contains('show'));
+    });
 
-    // Close sidebar on mobile when clicking outside
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768) {
-            const target = e.target;
-            if (!sidebar.contains(target) && !target.closest('.sidebar-toggle')) {
-                if (sidebar.classList.contains('show')) {
-                    sidebar.classList.remove('show');
-                    document.body.classList.remove('sidebar-open');
-                }
-            }
+    document.addEventListener('click', e => {
+        if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !e.target.closest('.sidebar-toggle')) {
+            sidebar.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
         }
     });
 
-    // Handle window resize: ensure classes are sane when switching breakpoints
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
-            // remove mobile-only state
-            if (sidebar.classList.contains('show')) {
-                sidebar.classList.remove('show');
-                document.body.classList.remove('sidebar-open');
-            }
-            // restore desktop preference
-            const desktopSaved = localStorage.getItem('sidebarCollapsed');
-            if (desktopSaved === 'true') {
-                sidebar.classList.add('collapsed');
-            }
-        } else {
-            // small screens should not use collapsed state
-            sidebar.classList.remove('collapsed');
-        }
+            sidebar.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+            if (localStorage.getItem('sidebarCollapsed') === 'true') sidebar.classList.add('collapsed');
+        } else sidebar.classList.remove('collapsed');
     });
 }
 
-// Initialize Bootstrap Tooltips
+// Bootstrap Tooltips
 function initializeTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
 }
 
 // Form Validation
 function initializeFormValidation() {
     const forms = document.querySelectorAll('.needs-validation');
-    
-    Array.prototype.slice.call(forms).forEach(function(form) {
-        form.addEventListener('submit', function(event) {
+    forms.forEach(form => {
+        form.addEventListener('submit', e => {
             if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
+                e.preventDefault();
+                e.stopPropagation();
             }
-            
             form.classList.add('was-validated');
-        }, false);
-    });
-    
-    // Real-time validation
-    const inputs = document.querySelectorAll('input[required], select[required], textarea[required]');
-    inputs.forEach(function(input) {
-        input.addEventListener('blur', function() {
-            validateField(input);
         });
-        
-        input.addEventListener('input', function() {
-            if (input.classList.contains('is-invalid')) {
-                validateField(input);
-            }
+
+        form.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
+            input.addEventListener('blur', () => validateField(input));
+            input.addEventListener('input', () => input.classList.contains('is-invalid') && validateField(input));
         });
     });
 }
 
-// Validate individual field
 function validateField(field) {
-    const isValid = field.checkValidity();
-    
     field.classList.remove('is-valid', 'is-invalid');
-    
-    if (isValid) {
-        field.classList.add('is-valid');
-    } else {
-        field.classList.add('is-invalid');
-    }
+    field.classList.add(field.checkValidity() ? 'is-valid' : 'is-invalid');
 }
 
-// Initialize Charts (using Chart.js if available)
+// Charts (Chart.js)
 function initializeCharts() {
-    // Dashboard Statistics Chart
-    const chartElement = document.getElementById('statisticsChart');
-    if (chartElement && typeof Chart !== 'undefined') {
-        const ctx = chartElement.getContext('2d');
-        
-        new Chart(ctx, {
+    const statsChart = document.getElementById('statisticsChart');
+    if (statsChart && typeof Chart !== 'undefined') {
+        new Chart(statsChart.getContext('2d'), {
             type: 'line',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -150,112 +95,49 @@ function initializeCharts() {
                     tension: 0.4
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f1f5f9'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
-    
-    // Attendance Chart
+
     const attendanceChart = document.getElementById('attendanceChart');
     if (attendanceChart && typeof Chart !== 'undefined') {
-        const ctx = attendanceChart.getContext('2d');
-        
-        new Chart(ctx, {
+        new Chart(attendanceChart.getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: ['Present', 'Absent', 'Late'],
                 datasets: [{
                     data: [85, 10, 5],
-                    backgroundColor: [
-                        'rgb(74, 107, 255)',
-                        '#dc3545',
-                        '#ffc107'
-                    ],
+                    backgroundColor: ['rgb(74, 107, 255)', '#dc3545', '#ffc107'],
                     borderWidth: 0
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
     }
 }
 
-// Data Table Enhancement
+// DataTables
 function initializeDataTables() {
     if (typeof $ !== 'undefined' && $.fn.DataTable) {
         $('.data-table').DataTable({
             responsive: true,
             pageLength: 10,
             order: [[0, 'asc']],
-            language: {
-                search: "Search records:",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
-                }
-            }
+            language: { search: "Search records:", lengthMenu: "Show _MENU_ entries", info: "Showing _START_ to _END_ of _TOTAL_ entries" }
         });
     }
 }
 
-// Utility Functions
+// Toast Notifications
 function showToast(message, type = 'success') {
-    const toastContainer = document.getElementById('toastContainer') || createToastContainer();
-    
+    const container = document.getElementById('toastContainer') || createToastContainer();
     const toast = document.createElement('div');
     toast.className = `toast align-items-center text-white bg-${type} border-0`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-    
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
-    
-    toastContainer.appendChild(toast);
-    
+    toast.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+    container.appendChild(toast);
     const bsToast = new bootstrap.Toast(toast);
     bsToast.show();
-    
-    toast.addEventListener('hidden.bs.toast', () => {
-        toast.remove();
-    });
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
 
 function createToastContainer() {
@@ -271,221 +153,75 @@ function createToastContainer() {
 function showConfirmModal(title, message, onConfirm) {
     const modal = document.createElement('div');
     modal.className = 'modal fade';
-    modal.innerHTML = `
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">${title}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    ${message}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmBtn">Confirm</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
+    modal.innerHTML = `<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">${title}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">${message}</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-danger" id="confirmBtn">Confirm</button></div></div></div>`;
     document.body.appendChild(modal);
-    
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
-    
-    modal.querySelector('#confirmBtn').addEventListener('click', () => {
-        onConfirm();
-        bsModal.hide();
-    });
-    
-    modal.addEventListener('hidden.bs.modal', () => {
-        modal.remove();
-    });
+    modal.querySelector('#confirmBtn').addEventListener('click', () => { onConfirm(); bsModal.hide(); });
+    modal.addEventListener('hidden.bs.modal', () => modal.remove());
 }
 
-// Loading States
+// Loading state helper
 function showLoading(element) {
     const originalText = element.textContent;
     element.disabled = true;
     element.innerHTML = '<span class="loading"></span> Loading...';
-    
-    return function hideLoading() {
-        element.disabled = false;
-        element.textContent = originalText;
-    };
+    return () => { element.disabled = false; element.textContent = originalText; };
 }
 
 // AJAX Helper
 function makeRequest(url, options = {}) {
-    const defaults = {
+    return fetch(url, Object.assign({
         method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    };
-    
-    const config = Object.assign(defaults, options);
-    
-    return fetch(url, config)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .catch(error => {
-            console.error('Request failed:', error);
-            showToast('An error occurred. Please try again.', 'danger');
-            throw error;
-        });
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    }, options))
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .catch(err => { console.error(err); showToast('An error occurred', 'danger'); throw err; });
 }
 
 // Form Helpers
 function serializeForm(form) {
-    const formData = new FormData(form);
     const data = {};
-    
-    for (let [key, value] of formData.entries()) {
-        data[key] = value;
-    }
-    
+    new FormData(form).forEach((v, k) => data[k] = v);
     return data;
 }
-
 function resetForm(form) {
     form.reset();
     form.classList.remove('was-validated');
-    
-    const inputs = form.querySelectorAll('.is-valid, .is-invalid');
-    inputs.forEach(input => {
-        input.classList.remove('is-valid', 'is-invalid');
-    });
+    form.querySelectorAll('.is-valid,.is-invalid').forEach(i => i.classList.remove('is-valid','is-invalid'));
 }
 
-// Dark Mode Toggle (Optional)
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    const isDark = document.body.classList.contains('dark-mode');
-    localStorage.setItem('darkMode', isDark);
-}
-
-// Initialize dark mode from localStorage
-function initializeDarkMode() {
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode === 'true') {
-        document.body.classList.add('dark-mode');
-    }
-}
-
-// Search Functionality
+// Search
 function initializeSearch() {
-    const searchInput = document.querySelector('.search-input');
-    const searchableItems = document.querySelectorAll('.searchable-item');
-    
-    if (searchInput && searchableItems.length > 0) {
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            
-            searchableItems.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                const shouldShow = text.includes(query);
-                
-                item.style.display = shouldShow ? '' : 'none';
-            });
-        });
-    }
+    const input = document.querySelector('.search-input');
+    const items = document.querySelectorAll('.searchable-item');
+    if (!input || !items.length) return;
+    input.addEventListener('input', () => {
+        const q = input.value.toLowerCase().trim();
+        items.forEach(i => i.style.display = i.textContent.toLowerCase().includes(q) ? '' : 'none');
+    });
 }
 
-// Export Functions
+// Export table to CSV
 function exportTableToCSV(tableId, filename = 'export.csv') {
-    const table = document.getElementById(tableId);
-    if (!table) return;
-    
-    const rows = table.querySelectorAll('tr');
-    const csvContent = [];
-    
-    rows.forEach(row => {
-        const cols = row.querySelectorAll('td, th');
-        const rowData = [];
-        
-        cols.forEach(col => {
-            rowData.push('"' + col.textContent.replace(/"/g, '""') + '"');
-        });
-        
-        csvContent.push(rowData.join(','));
-    });
-    
-    const csvString = csvContent.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    
-    window.URL.revokeObjectURL(url);
+    const table = document.getElementById(tableId); if (!table) return;
+    const rows = Array.from(table.querySelectorAll('tr')).map(r => Array.from(r.querySelectorAll('td,th')).map(c => `"${c.textContent.replace(/"/g,'""')}"`).join(','));
+    const blob = new Blob([rows.join('\n')], { type:'text/csv' });
+    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; link.click(); URL.revokeObjectURL(link.href);
 }
 
-// Auto-save for forms
-function initializeAutoSave(formSelector, interval = 30000) {
-    const form = document.querySelector(formSelector);
-    if (!form) return;
-    
-    setInterval(() => {
-        const formData = serializeForm(form);
-        localStorage.setItem(`autosave_${form.id}`, JSON.stringify(formData));
-    }, interval);
-    
-    // Restore on page load
+// Auto-save form
+function initializeAutoSave(selector, interval = 30000) {
+    const form = document.querySelector(selector); if (!form) return;
+    setInterval(() => localStorage.setItem(`autosave_${form.id}`, JSON.stringify(serializeForm(form))), interval);
     const saved = localStorage.getItem(`autosave_${form.id}`);
-    if (saved) {
-        const data = JSON.parse(saved);
-        Object.keys(data).forEach(key => {
-            const field = form.querySelector(`[name="${key}"]`);
-            if (field) {
-                field.value = data[key];
-            }
-        });
-    }
+    if (saved) Object.entries(JSON.parse(saved)).forEach(([k,v]) => { const f = form.querySelector(`[name="${k}"]`); if(f) f.value = v; });
 }
 
-// Initialize all features when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDarkMode();
-    initializeSearch();
-    initializeDataTables();
-});
-
+// Service Worker registration
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        // Only register if the file exists
-        fetch('/sw.js', { method: 'HEAD' })
-            .then(response => {
-                if (response.ok) {
-                    navigator.serviceWorker.register('/sw.js')
-                        .then(function(registration) {
-                            console.log('SW registered: ', registration);
-                        })
-                        .catch(function(registrationError) {
-                            console.log('SW registration failed: ', registrationError);
-                        });
-                }
-            })
-            .catch(() => {
-                console.log('Service Worker file not found, skipping registration');
-            });
-    });
+    window.addEventListener('load', () => fetch('/sw.js',{method:'HEAD'}).then(r => r.ok && navigator.serviceWorker.register('/sw.js')).catch(()=>{}));
 }
 
-// Global error handler - FIXED
-window.addEventListener('error', function(e) {
-    console.error('Global error:', e.error);
-    // Filter out null errors (common with third-party scripts)
-    if (e.error !== null) {
-        // You can send this to your logging service
-        console.log('Meaningful error occurred:', e.error);
-    }
-});
+// Global error handling
+window.addEventListener('error', e => { if(e.error) console.error('Global error:', e.error); });
