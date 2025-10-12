@@ -248,5 +248,6 @@ include '../includes/sidebar.php';
 </div>
 
 <?php
+//last
 include '../includes/footer.php';
 ?>
