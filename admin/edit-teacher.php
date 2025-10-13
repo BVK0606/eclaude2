@@ -1,119 +1,82 @@
 <?php
 require_once '../config.php';
-requireRole('admin');
+requireRole('admin'); // Only admin can access
 
-$pageTitle = 'Edit Teacher';
-
-// Check if teacher ID is provided
+// If no teacher ID is provided, redirect
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: manage-teachers.php');
     exit;
 }
 
 $teacherId = $_GET['id'];
+$error = '';
+$success = '';
 
-// Get teacher data
-try {
-    $db = Database::getInstance()->getConnection();
-    $stmt = $db->prepare("
-        SELECT t.teacher_id, t.full_name, t.qualification, t.experience,
-               u.email, u.uname as username
+// Get teacher details
+$sql = "SELECT t.teacher_id, t.full_name, t.qualification, t.experience,
+               u.email, u.uname AS username
         FROM teachers t
         LEFT JOIN users u ON t.user_id = u.id
-        WHERE t.teacher_id = ?
-    ");
-    $stmt->execute([$teacherId]);
-    $teacher = $stmt->fetch();
-    
-    if (!$teacher) {
-        $_SESSION['error'] = 'Teacher not found.';
-        header('Location: manage-teachers.php');
-        exit;
-    }
-} catch (PDOException $e) {
-    $_SESSION['error'] = 'Failed to fetch teacher data. Please try again later.';
-    error_log("Fetch teacher error: " . $e->getMessage());
+        WHERE t.teacher_id = '$teacherId'";
+$result = mysqli_query($conn, $sql);
+$teacher = mysqli_fetch_assoc($result);
+
+if (!$teacher) {
+    $_SESSION['error'] = 'Teacher not found.';
     header('Location: manage-teachers.php');
     exit;
 }
 
-// Handle form submission
-$error = '';
-$success = '';
-
+// When form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
-        $error = 'Invalid security token. Please try again.';
+    // Get and sanitize form input
+    $fullName = sanitizeInput($_POST['full_name'] ?? '');
+    $email = sanitizeInput($_POST['email'] ?? '');
+    $qualification = sanitizeInput($_POST['qualification'] ?? '');
+    $experience = sanitizeInput($_POST['experience'] ?? '');
+
+    // Basic validation
+    if (empty($fullName) || empty($email)) {
+        $error = "Please fill in all required fields.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Please enter a valid email address.";
     } else {
-        $fullName = sanitizeInput($_POST['full_name'] ?? '');
-        $email = sanitizeInput($_POST['email'] ?? '');
-        $qualification = sanitizeInput($_POST['qualification'] ?? '');
-        $experience = sanitizeInput($_POST['experience'] ?? '');
-        
-        // Validation
-        if (empty($fullName) || empty($email)) {
-            $error = 'Please fill in all required fields.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = 'Please enter a valid email address.';
+        // Check if email already exists (excluding this teacher)
+        $checkEmail = "
+            SELECT u.id FROM users u
+            JOIN teachers t ON u.id = t.user_id
+            WHERE u.email = '$email' AND t.teacher_id != '$teacherId'
+        ";
+        $emailResult = mysqli_query($conn, $checkEmail);
+
+        if (mysqli_num_rows($emailResult) > 0) {
+            $error = "Email already exists.";
         } else {
-            try {
-                $db = Database::getInstance()->getConnection();
-                
-                // Check if email already exists (excluding current teacher's user)
-                $stmt = $db->prepare("
-                    SELECT COUNT(*) FROM users u 
-                    JOIN teachers t ON u.id = t.user_id 
-                    WHERE u.email = ? AND t.teacher_id != ?
-                ");
-                $stmt->execute([$email, $teacherId]);
-                $emailExists = $stmt->fetchColumn();
-                
-                if ($emailExists > 0) {
-                    $error = 'Email already exists.';
-                } else {
-                    // Update teacher and user data
-                    $db->beginTransaction();
-                    
-                    try {
-                        // Update teacher
-                        $stmt = $db->prepare("
-                            UPDATE teachers 
-                            SET full_name = ?, qualification = ?, experience = ? 
-                            WHERE teacher_id = ?
-                        ");
-                        $stmt->execute([$fullName, $qualification, $experience, $teacherId]);
-                        
-                        // Update user email
-                        $stmt = $db->prepare("
-                            UPDATE users u
-                            JOIN teachers t ON u.id = t.user_id
-                            SET u.email = ?
-                            WHERE t.teacher_id = ?
-                        ");
-                        $stmt->execute([$email, $teacherId]);
-                        
-                        $db->commit();
-                        $success = 'Teacher updated successfully!';
-                        
-                        // Refresh teacher data
-                        $stmt = $db->prepare("
-                            SELECT t.teacher_id, t.full_name, t.qualification, t.experience,
-                                   u.email, u.uname as username
-                            FROM teachers t
-                            LEFT JOIN users u ON t.user_id = u.id
-                            WHERE t.teacher_id = ?
-                        ");
-                        $stmt->execute([$teacherId]);
-                        $teacher = $stmt->fetch();
-                        
-                    } catch (Exception $e) {
-                        $db->rollback();
-                        throw $e;
-                    }
-                }
-            } catch (PDOException $e) {
-                $error = 'Failed to update teacher. Please try again later.';
-                error_log("Update teacher error: " . $e->getMessage());
+            // Update teacher details
+            $updateTeacher = "
+                UPDATE teachers 
+                SET full_name = '$fullName',
+                    qualification = '$qualification',
+                    experience = '$experience'
+                WHERE teacher_id = '$teacherId'
+            ";
+
+            // Update user email
+            $updateUser = "
+                UPDATE users u
+                JOIN teachers t ON u.id = t.user_id
+                SET u.email = '$email'
+                WHERE t.teacher_id = '$teacherId'
+            ";
+
+            if (mysqli_query($conn, $updateTeacher) && mysqli_query($conn, $updateUser)) {
+                $success = "Teacher updated successfully!";
+
+                // Refresh teacher data
+                $result = mysqli_query($conn, $sql);
+                $teacher = mysqli_fetch_assoc($result);
+            } else {
+                $error = "Failed to update teacher. Please try again.";
             }
         }
     }
@@ -128,117 +91,71 @@ include '../includes/sidebar.php';
         <div class="row mb-4">
             <div class="col-12">
                 <div class="dashboard-card">
-                    <h2 class="mb-2">Edit Teacher</h2>
-                    <p class="text-muted mb-0">Update teacher information.</p>
+                    <h2>Edit Teacher</h2>
+                    <p>Update teacher information below.</p>
                 </div>
             </div>
         </div>
-        
+
         <div class="row">
             <div class="col-12">
                 <div class="dashboard-card">
                     <?php if ($error): ?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
                             <?php echo htmlspecialchars($error); ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
-                    
+
                     <?php if ($success): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
                             <?php echo htmlspecialchars($success); ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
-                    
-                    <form method="POST" class="needs-validation" novalidate>
-                        <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
-                        
+
+                    <form method="POST">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="full_name" class="form-label">
-                                    <i class="fas fa-id-card me-1"></i>Full Name <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="full_name" 
-                                       name="full_name" 
-                                       placeholder="Enter teacher's full name"
-                                       value="<?php echo htmlspecialchars($teacher['full_name']); ?>"
-                                       required>
-                                <div class="invalid-feedback">
-                                    Please enter the teacher's full name.
-                                </div>
+                                <label>Full Name *</label>
+                                <input type="text" name="full_name" class="form-control"
+                                       value="<?php echo htmlspecialchars($teacher['full_name']); ?>" required>
                             </div>
-                            
+
                             <div class="col-md-6 mb-3">
-                                <label for="username" class="form-label">
-                                    <i class="fas fa-user me-1"></i>Username
-                                </label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="username" 
-                                       name="username" 
-                                       value="<?php echo htmlspecialchars($teacher['username']); ?>"
-                                       disabled>
+                                <label>Username</label>
+                                <input type="text" class="form-control"
+                                       value="<?php echo htmlspecialchars($teacher['username']); ?>" disabled>
                                 <div class="form-text">Username cannot be changed.</div>
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">
-                                    <i class="fas fa-envelope me-1"></i>Email Address <span class="text-danger">*</span>
-                                </label>
-                                <input type="email" 
-                                       class="form-control" 
-                                       id="email" 
-                                       name="email" 
-                                       placeholder="Enter email address"
-                                       value="<?php echo htmlspecialchars($teacher['email']); ?>"
-                                       required>
-                                <div class="invalid-feedback">
-                                    Please enter a valid email address.
-                                </div>
+                                <label>Email *</label>
+                                <input type="email" name="email" class="form-control"
+                                       value="<?php echo htmlspecialchars($teacher['email']); ?>" required>
                             </div>
-                            
+
                             <div class="col-md-6 mb-3">
-                                <label for="qualification" class="form-label">
-                                    <i class="fas fa-graduation-cap me-1"></i>Qualification
-                                </label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="qualification" 
-                                       name="qualification" 
-                                       placeholder="Enter qualification"
+                                <label>Qualification</label>
+                                <input type="text" name="qualification" class="form-control"
                                        value="<?php echo htmlspecialchars($teacher['qualification']); ?>">
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="experience" class="form-label">
-                                    <i class="fas fa-briefcase me-1"></i>Experience (years)
-                                </label>
-                                <input type="number" 
-                                       class="form-control" 
-                                       id="experience" 
-                                       name="experience" 
-                                       placeholder="Enter years of experience"
+                                <label>Experience (years)</label>
+                                <input type="number" name="experience" class="form-control"
                                        min="0"
                                        value="<?php echo htmlspecialchars($teacher['experience']); ?>">
                             </div>
                         </div>
-                        
+
                         <div class="d-flex justify-content-between">
-                            <a href="manage-teachers.php" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Teachers
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Update Teacher
-                            </button>
+                            <a href="manage-teachers.php" class="btn btn-secondary">Back</a>
+                            <button type="submit" class="btn btn-primary">Update Teacher</button>
                         </div>
                     </form>
                 </div>
@@ -247,7 +164,4 @@ include '../includes/sidebar.php';
     </div>
 </div>
 
-<?php
-//last
-include '../includes/footer.php';
-?>
+<?php include '../includes/footer.php'; ?>

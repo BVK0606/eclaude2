@@ -2,91 +2,82 @@
 require_once '../config.php';
 requireRole('admin');
 
-$pageTitle = 'Edit Student';
+$pageTitle = 'Edit Teacher';
 
-// Check if student ID is provided
+// Check if teacher ID is provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: manage-students.php');
+    header('Location: manage-teachers.php');
     exit;
 }
-$studentId = (int)$_GET['id'];
 
-// Get student data
-$student = mysqli_fetch_assoc(mysqli_query($conn, "
-    SELECT s.student_id, s.roll_no, s.full_name, s.dob, s.address, s.class_id,
-           u.email, u.uname as username
-    FROM students s
-    LEFT JOIN users u ON s.user_id = u.id
-    WHERE s.student_id = $studentId
+$teacherId = (int)$_GET['id'];
+
+// Get teacher data
+$teacher = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT t.teacher_id, t.full_name, t.qualification, t.experience,
+           u.email, u.uname AS username
+    FROM teachers t
+    LEFT JOIN users u ON t.user_id = u.id
+    WHERE t.teacher_id = $teacherId
 "));
-if (!$student) {
-    $_SESSION['error'] = 'Student not found.';
-    header('Location: manage-students.php');
+
+if (!$teacher) {
+    $_SESSION['error'] = 'Teacher not found.';
+    header('Location: manage-teachers.php');
     exit;
 }
-
-// Get classes
-$classesResult = mysqli_query($conn, "SELECT class_id, class_name FROM classes ORDER BY class_name");
-$classes = [];
-while ($row = mysqli_fetch_assoc($classesResult)) $classes[] = $row;
 
 $error = '';
 $success = '';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $rollNo = sanitizeInput($_POST['roll_no'] ?? '');
     $fullName = sanitizeInput($_POST['full_name'] ?? '');
     $email = sanitizeInput($_POST['email'] ?? '');
-    $classId = sanitizeInput($_POST['class_id'] ?? '');
-    $dob = sanitizeInput($_POST['dob'] ?? '');
-    $address = sanitizeInput($_POST['address'] ?? '');
+    $qualification = sanitizeInput($_POST['qualification'] ?? '');
+    $experience = sanitizeInput($_POST['experience'] ?? '');
 
-    // Validate required fields
-    if (empty($rollNo) || empty($fullName) || empty($email) || empty($classId)) {
+    if (empty($fullName) || empty($email)) {
         $error = 'Please fill in all required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address.';
     } else {
-        // Check if roll_no exists (excluding current)
-        $checkRoll = mysqli_query($conn, "SELECT student_id FROM students WHERE roll_no='$rollNo' AND student_id != $studentId");
-        if (mysqli_num_rows($checkRoll) > 0) {
-            $error = 'Roll number already exists.';
+        // Check if email already exists (excluding current teacher)
+        $checkEmail = mysqli_query($conn, "
+            SELECT u.id FROM users u
+            JOIN teachers t ON u.id = t.user_id
+            WHERE u.email = '$email' AND t.teacher_id != $teacherId
+        ");
+        if (mysqli_num_rows($checkEmail) > 0) {
+            $error = 'Email already exists.';
         } else {
-            // Check if email exists (excluding current)
-            $checkEmail = mysqli_query($conn, "
-                SELECT u.id FROM users u
-                JOIN students s ON u.id = s.user_id
-                WHERE u.email='$email' AND s.student_id != $studentId
+            // Update teacher info
+            $updateTeacher = mysqli_query($conn, "
+                UPDATE teachers 
+                SET full_name = '$fullName', qualification = '$qualification', experience = '$experience'
+                WHERE teacher_id = $teacherId
             ");
-            if (mysqli_num_rows($checkEmail) > 0) {
-                $error = 'Email already exists.';
+
+            // Update user email
+            $updateUser = mysqli_query($conn, "
+                UPDATE users u
+                JOIN teachers t ON u.id = t.user_id
+                SET u.email = '$email'
+                WHERE t.teacher_id = $teacherId
+            ");
+
+            if ($updateTeacher && $updateUser) {
+                $success = 'Teacher updated successfully!';
+                // Refresh teacher data
+                $teacher = mysqli_fetch_assoc(mysqli_query($conn, "
+                    SELECT t.teacher_id, t.full_name, t.qualification, t.experience,
+                           u.email, u.uname AS username
+                    FROM teachers t
+                    LEFT JOIN users u ON t.user_id = u.id
+                    WHERE t.teacher_id = $teacherId
+                "));
             } else {
-                // Update student
-                $updateStudent = mysqli_query($conn, "
-                    UPDATE students SET roll_no='$rollNo', full_name='$fullName', class_id='$classId', dob='$dob', address='$address'
-                    WHERE student_id = $studentId
-                ");
-                // Update user email
-                $updateUser = mysqli_query($conn, "
-                    UPDATE users u
-                    JOIN students s ON u.id = s.user_id
-                    SET u.email='$email'
-                    WHERE s.student_id = $studentId
-                ");
-                if ($updateStudent && $updateUser) {
-                    $success = 'Student updated successfully!';
-                    // Refresh student data
-                    $student = mysqli_fetch_assoc(mysqli_query($conn, "
-                        SELECT s.student_id, s.roll_no, s.full_name, s.dob, s.address, s.class_id,
-                               u.email, u.uname as username
-                        FROM students s
-                        LEFT JOIN users u ON s.user_id = u.id
-                        WHERE s.student_id = $studentId
-                    "));
-                } else {
-                    $error = 'Failed to update student. Please try again.';
-                }
+                $error = 'Failed to update teacher. Please try again.';
             }
         }
     }
@@ -101,8 +92,8 @@ include '../includes/sidebar.php';
         <div class="row mb-4">
             <div class="col-12">
                 <div class="dashboard-card">
-                    <h2>Edit Student</h2>
-                    <p class="text-muted">Update student information.</p>
+                    <h2>Edit Teacher</h2>
+                    <p class="text-muted">Update teacher information.</p>
                 </div>
             </div>
         </div>
@@ -121,48 +112,40 @@ include '../includes/sidebar.php';
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label>Full Name *</label>
-                                <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($student['full_name']); ?>" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Roll Number *</label>
-                                <input type="text" class="form-control" name="roll_no" value="<?php echo htmlspecialchars($student['roll_no']); ?>" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label>Username</label>
-                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($student['username']); ?>" disabled>
+                                <input type="text" class="form-control" name="full_name" 
+                                       value="<?php echo htmlspecialchars($teacher['full_name']); ?>" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Email *</label>
-                                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($student['email']); ?>" required>
+                                <input type="email" class="form-control" name="email" 
+                                       value="<?php echo htmlspecialchars($teacher['email']); ?>" required>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label>Class *</label>
-                                <select class="form-select" name="class_id" required>
-                                    <option value="">Select Class</option>
-                                    <?php foreach ($classes as $class): ?>
-                                        <option value="<?php echo $class['class_id']; ?>" <?php echo ($student['class_id'] == $class['class_id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($class['class_name']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <label>Qualification</label>
+                                <input type="text" class="form-control" name="qualification" 
+                                       value="<?php echo htmlspecialchars($teacher['qualification']); ?>">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Date of Birth</label>
-                                <input type="date" class="form-control" name="dob" value="<?php echo htmlspecialchars($student['dob']); ?>">
+                                <label>Experience (years)</label>
+                                <input type="number" class="form-control" name="experience" min="0"
+                                       value="<?php echo htmlspecialchars($teacher['experience']); ?>">
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label>Address</label>
-                            <textarea class="form-control" name="address"><?php echo htmlspecialchars($student['address']); ?></textarea>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Username</label>
+                                <input type="text" class="form-control" 
+                                       value="<?php echo htmlspecialchars($teacher['username']); ?>" disabled>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="manage-students.php" class="btn btn-secondary">Back</a>
-                            <button type="submit" class="btn btn-primary">Update Student</button>
+                            <a href="manage-teachers.php" class="btn btn-secondary">Back</a>
+                            <button type="submit" class="btn btn-primary">Update Teacher</button>
                         </div>
                     </form>
                 </div>
