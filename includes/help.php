@@ -34,13 +34,13 @@ include 'sidebar.php';
 
             <h5>Contact & Support</h5>
             <ul>
-                <li>Email: <a href="mailto:support@edutrace.local">support@edutrace.local</a></li>
+                <li>Email: <a href="mailto:support@edutrack.local">support@edutrack.local</a></li>
                 <li>Phone: 123-456-7890</li>
                 <li>Support Hours: Mon-Fri, 9am-5pm</li>
             </ul>
 
-            <h5>About EduTrace</h5>
-            <p>EduTrace is a simple student management system for colleges and schools. It helps manage students, teachers, classes, attendance, and marks in one place.</p>
+            <h5>About EduTrack</h5>
+            <p>EduTrack is a simple student management system for colleges and schools. It helps manage students, teachers, classes, attendance, and marks in one place.</p>
         </div>
     </div>
 </div>

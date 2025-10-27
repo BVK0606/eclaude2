@@ -1,4 +1,4 @@
-// Edutrace Student Management System - Main JavaScript
+// Edutrack Student Management System - Main JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeSidebar();
